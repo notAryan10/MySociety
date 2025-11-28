@@ -3,16 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView 
 import { register, login } from '../services/api';
 
 export default function SignUpScreen({ navigation }) {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    block: '',
-    building: '',
-    floor: '',
-    room_no: '',
-  });
+  const [formData, setFormData] = useState({name: '',email: '',password: '',confirmPassword: '', block: '', building: '', floor: '', room_no: '',});
   const [loading, setLoading] = useState(false);
 
   const handleChange = (name, value) => {
@@ -34,15 +25,7 @@ export default function SignUpScreen({ navigation }) {
 
     try {
       setLoading(true);
-      const userData = {
-        name,
-        email,
-        password,
-        block,
-        building,
-        floor: Number(floor),
-        room_no
-      };
+      const userData = {name,email,password, block, building, floor: Number(floor),room_no};
       
       await register(userData);
       await login(email, password);
