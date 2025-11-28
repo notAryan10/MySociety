@@ -16,7 +16,8 @@ export default function LoginScreen({ navigation }) {
       } catch (e) {
         console.log(e)
       }
-    })}, [])
+    })
+  }, [])
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -29,7 +30,6 @@ export default function LoginScreen({ navigation }) {
       const res = await login(email, password)
       if (res?.token) await AsyncStorage.setItem('token', res.token)
       navigation.replace('Dashboard')
-      Alert.alert('Success', `Welcome back`);
     } catch (error) {
       Alert.alert('Login Failed', error.message || 'An error occurred during login');
     } finally {
@@ -39,13 +39,13 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>    
-      <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />     
-      <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />    
+      <Text style={styles.title}>Login</Text>
+      <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+      <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
       <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
         <Text style={styles.buttonText}> {loading ? 'Logging in...' : 'Login'} </Text>
       </TouchableOpacity>
-      
+
       <View style={styles.footer}>
         <Text>Don't have an account? </Text>
         <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>

@@ -1,13 +1,22 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
-const API_URL = 'http://localhost:3000';
+const getApiUrl = () => {
+  const debuggerHost = Constants.expoConfig?.hostUri;
+  if (debuggerHost) {
+    const host = debuggerHost.split(':')[0]
+    return `http://${host}:3000`;
+  }
 
-const api = axios.create({ 
-  baseURL: API_URL, 
-  headers: { 
-    'Content-Type': 'application/json',
-  } 
+  return 'http://localhost:3000'
+};
+
+const API_URL = getApiUrl();
+
+const api = axios.create({
+  baseURL: API_URL,
+  headers: { 'Content-Type': 'application/json', }
 })
 
 api.interceptors.request.use(async (config) => {
