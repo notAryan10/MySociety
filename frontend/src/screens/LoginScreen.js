@@ -1,11 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { login, getCurrentUser } from '../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (token) navigation.replace('Dashboard');
+      } catch (e) {
+        console.log(e)
+      }
+    })}, [])
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -15,15 +26,16 @@ export default function LoginScreen({ navigation }) {
 
     try {
       setLoading(true);
-      await login(email, password);
-      const user = getCurrentUser();
-      Alert.alert('Success', `Welcome back, ${user.name}!`);
+      const res = await login(email, password)
+      if (res?.token) await AsyncStorage.setItem('token', res.token)
+      navigation.replace('Dashboard')
+      Alert.alert('Success', `Welcome back`);
     } catch (error) {
       Alert.alert('Login Failed', error.message || 'An error occurred during login');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
     <View style={styles.container}>

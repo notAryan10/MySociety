@@ -23,7 +23,7 @@ mongoose.connect(process.env.MONGO_URI, {
 
 app.get("/", (req, res) => {
   res.status(200).json({ "message": "API is working" });
-});
+})
 
 app.post("/register", async (req, res) => {
     const { name, email, password, block, building, floor, room_no } = req.body;
