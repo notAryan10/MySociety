@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import { register, login } from '../services/api';
+import colors from '../styles/colors';
 
 export default function SignUpScreen({ navigation }) {
   const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '', block: '', building: '', floor: '', room_no: '', });
@@ -44,21 +45,21 @@ export default function SignUpScreen({ navigation }) {
       <View style={styles.container}>
         <Text style={styles.title}>Create Account</Text>
 
-        <TextInput style={styles.input} placeholder="Full Name" value={formData.name} onChangeText={(text) => handleChange('name', text)} autoCapitalize="words" />
-        <TextInput style={styles.input} placeholder="Email" value={formData.email} onChangeText={(text) => handleChange('email', text.toLowerCase())} keyboardType="email-address" autoCapitalize="none" />
-        <TextInput style={styles.input} placeholder="Password" value={formData.password} onChangeText={(text) => handleChange('password', text)} secureTextEntry />
-        <TextInput style={styles.input} placeholder="Confirm Password" value={formData.confirmPassword} onChangeText={(text) => handleChange('confirmPassword', text)} secureTextEntry />
-        <TextInput style={styles.input} placeholder="Block (e.g., A, B, C)" value={formData.block} onChangeText={(text) => handleChange('block', text)} />
-        <TextInput style={styles.input} placeholder="Building Name/Number" value={formData.building} onChangeText={(text) => handleChange('building', text)} />
-        <TextInput style={styles.input} placeholder="Floor Number" value={formData.floor} onChangeText={(text) => handleChange('floor', text.replace(/[^0-9]/g, ''))} keyboardType="number-pad" />
-        <TextInput style={styles.input} placeholder="Room Number" value={formData.room_no} onChangeText={(text) => handleChange('room_no', text)} />
+        <TextInput style={styles.input} placeholder="Full Name" placeholderTextColor={colors.textMuted} value={formData.name} onChangeText={(text) => handleChange('name', text)} autoCapitalize="words" />
+        <TextInput style={styles.input} placeholder="Email" placeholderTextColor={colors.textMuted} value={formData.email} onChangeText={(text) => handleChange('email', text.toLowerCase())} keyboardType="email-address" autoCapitalize="none" />
+        <TextInput style={styles.input} placeholder="Password" placeholderTextColor={colors.textMuted} value={formData.password} onChangeText={(text) => handleChange('password', text)} secureTextEntry />
+        <TextInput style={styles.input} placeholder="Confirm Password" placeholderTextColor={colors.textMuted} value={formData.confirmPassword} onChangeText={(text) => handleChange('confirmPassword', text)} secureTextEntry />
+        <TextInput style={styles.input} placeholder="Block (e.g., A, B, C)" placeholderTextColor={colors.textMuted} value={formData.block} onChangeText={(text) => handleChange('block', text)} />
+        <TextInput style={styles.input} placeholder="Building Name/Number" placeholderTextColor={colors.textMuted} value={formData.building} onChangeText={(text) => handleChange('building', text)} />
+        <TextInput style={styles.input} placeholder="Floor Number" placeholderTextColor={colors.textMuted} value={formData.floor} onChangeText={(text) => handleChange('floor', text.replace(/[^0-9]/g, ''))} keyboardType="number-pad" />
+        <TextInput style={styles.input} placeholder="Room Number" placeholderTextColor={colors.textMuted} value={formData.room_no} onChangeText={(text) => handleChange('room_no', text)} />
 
         <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={loading}>
           <Text style={styles.buttonText}>{loading ? 'Creating Account...' : 'Sign Up'}</Text>
         </TouchableOpacity>
 
         <View style={styles.footer}>
-          <Text>Already have an account? </Text>
+          <Text style={{ color: colors.textSecondary }}>Already have an account? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Login')}><Text style={styles.link}>Login</Text>
           </TouchableOpacity>
         </View>
@@ -70,47 +71,51 @@ export default function SignUpScreen({ navigation }) {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
+    backgroundColor: colors.background,
   },
   container: {
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 30,
+    fontSize: 32,
+    fontWeight: '700',
+    marginBottom: 40,
     textAlign: 'center',
+    color: colors.textPrimary,
   },
   input: {
     height: 50,
-    borderColor: '#ddd',
+    backgroundColor: colors.inputBackground,
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    marginBottom: 12,
     fontSize: 16,
+    color: colors.textPrimary,
   },
   button: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: colors.accent,
+    padding: 16,
+    borderRadius: 10,
     alignItems: 'center',
     marginTop: 10,
   },
   buttonText: {
-    color: '#fff',
+    color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 24,
   },
   link: {
-    color: '#007AFF',
+    color: colors.accent,
     fontWeight: '600',
   },
 });

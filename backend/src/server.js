@@ -7,6 +7,9 @@ import jwt from "jsonwebtoken";
 import connectDB from "./config/db.js";
 import { auth } from "./middleware/auth.js";
 import User from "./models/users.js";
+import postRoutes from "./routes/posts.js";
+import commentRoutes from "./routes/comments.js";
+import uploadRoutes from "./routes/upload.js";
 
 dotenv.config();
 const app = express()
@@ -17,20 +20,20 @@ app.use(express.json());
 app.use(cors());
 
 mongoose.connect(process.env.MONGO_URI, {
-  dbName: "mydatabase",
+    dbName: "mydatabase",
 }).then(() => console.log("MongoDB Connected"))
-  .catch(err => console.log(err));
+    .catch(err => console.log(err));
 
 app.get("/", (req, res) => {
-  res.status(200).json({ "message": "API is working" });
+    res.status(200).json({ "message": "API is working" });
 })
 
 app.post("/register", async (req, res) => {
     const { name, email, password, block, building, floor, room_no } = req.body;
 
     if (!email || !password || !name || !block || !building || !floor || !room_no) {
-        return res.status(400).json({ 
-            message: "All fields are required" 
+        return res.status(400).json({
+            message: "All fields are required"
         });
     }
 
@@ -42,13 +45,14 @@ app.post("/register", async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await User.create({ name, email, password: hashedPassword, block, building, floor: Number(floor), room_no });
         const token = jwt.sign({ userId: newUser._id, email: newUser.email }, jwtSec, { expiresIn: "1h" });
-        res.status(201).json({ message: "User registered successfully", token,
+        res.status(201).json({
+            message: "User registered successfully", token,
             user: { id: newUser._id, name: newUser.name, email: newUser.email, block: newUser.block, building: newUser.building, floor: newUser.floor, room_no: newUser.room_no }
         });
     } catch (error) {
         console.error("Registration Error:", error);
-        res.status(500).json({ 
-            message: error.message || "Server error during registration" 
+        res.status(500).json({
+            message: error.message || "Server error during registration"
         });
     }
 });
@@ -79,8 +83,12 @@ app.post("/login", async (req, res) => {
         console.error("Login Error:", error);
         res.status(500).json({ message: error.message || "Server error during login" });
     }
-});
+})
+app.use('/posts', postRoutes);
+app.use('/comments', commentRoutes);
+app.use('/upload', uploadRoutes);
+
 
 app.listen(process.env.PORT, () =>
-  console.log(`Server running on port ${process.env.PORT}`)
+    console.log(`Server running on port ${process.env.PORT}`)
 );

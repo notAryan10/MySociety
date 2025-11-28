@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { login, getCurrentUser } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import colors from '../styles/colors';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -39,15 +40,18 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-      <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
+      <Text style={styles.title}>Welcome Back</Text>
+      <Text style={styles.subtitle}>Sign in to MySociety</Text>
+
+      <TextInput style={styles.input} placeholder="Email" placeholderTextColor={colors.textMuted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+      <TextInput style={styles.input} placeholder="Password" placeholderTextColor={colors.textMuted} value={password} onChangeText={setPassword} secureTextEntry />
+
       <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-        <Text style={styles.buttonText}> {loading ? 'Logging in...' : 'Login'} </Text>
+        <Text style={styles.buttonText}>{loading ? 'Logging in...' : 'Login'}</Text>
       </TouchableOpacity>
 
       <View style={styles.footer}>
-        <Text>Don't have an account? </Text>
+        <Text style={styles.footerText}>Don't have an account? </Text>
         <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
           <Text style={styles.link}>Sign Up</Text>
         </TouchableOpacity>
@@ -61,42 +65,54 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 30,
+    fontSize: 32,
+    fontWeight: '700',
+    marginBottom: 8,
     textAlign: 'center',
+    color: colors.textPrimary,
+  },
+  subtitle: {
+    fontSize: 16,
+    marginBottom: 40,
+    textAlign: 'center',
+    color: colors.textSecondary,
   },
   input: {
     height: 50,
-    borderColor: '#ddd',
+    backgroundColor: colors.inputBackground,
+    borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    marginBottom: 16,
     fontSize: 16,
+    color: colors.textPrimary,
   },
   button: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: colors.accent,
+    padding: 16,
+    borderRadius: 10,
     alignItems: 'center',
     marginTop: 10,
   },
   buttonText: {
-    color: '#fff',
+    color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 24,
+  },
+  footerText: {
+    color: colors.textSecondary,
   },
   link: {
-    color: '#007AFF',
+    color: colors.accent,
     fontWeight: '600',
   },
 });

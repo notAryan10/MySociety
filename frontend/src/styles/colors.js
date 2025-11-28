@@ -1,0 +1,25 @@
+export const colors = {
+    background: '#0d0d0d',
+    cardBackground: '#1a1a1a',
+    inputBackground: '#222222',
+    textPrimary: '#eaeaea',
+    textSecondary: '#a0a0a0',
+    textMuted: '#666666',
+    accent: '#6b46ff',
+    accentLight: '#8b6aff',
+    accentDark: '#5236cc',
+    error: '#ff4444',
+    success: '#00c853',
+    warning: '#ffab00',
+    info: '#2196f3',
+    border: '#2a2a2a',
+    divider: '#1f1f1f',
+    shadow: '#000000',
+    maintenance: '#ff6b6b',
+    buySell: '#4ecdc4',
+    lostFound: '#ffd93d',
+    events: '#a8e6cf',
+    other: '#95a5a6',
+};
+
+export default colors;

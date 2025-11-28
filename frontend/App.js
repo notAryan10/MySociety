@@ -6,6 +6,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './src/screens/LoginScreen';
 import Dashboard from './src/screens/Dashboard';
 import SignUpScreen from './src/screens/SignUpScreen';
+import CreatePostScreen from './src/screens/CreatePostScreen';
+import PostDetailScreen from './src/screens/PostDetailScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -35,6 +37,8 @@ export default function App() {
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="Dashboard" component={Dashboard} />
+        <Stack.Screen name="CreatePost" component={CreatePostScreen} />
+        <Stack.Screen name="PostDetail" component={PostDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
