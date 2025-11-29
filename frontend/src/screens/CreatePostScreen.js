@@ -53,10 +53,13 @@ export default function CreatePostScreen({ navigation }) {
                 }
             }
 
-            const postData = { text: text.trim(), category, block: user.block, user_id: user.id, images: imageUrl ? [imageUrl] : [] }
+            const postData = { text: text.trim(), category, block: user.block, building: user.building, user_id: user.id, images: imageUrl ? [imageUrl] : [] }
             await createPost(postData);
             Alert.alert('Success', 'Post created successfully!');
-            navigation.goBack();
+            navigation.navigate('MainTabs', {
+                screen: 'Home',
+                params: { refresh: Date.now() }
+            });
         } catch (error) {
             Alert.alert('Error', error.message || 'Failed to create post');
         } finally {

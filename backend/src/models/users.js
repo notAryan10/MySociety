@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   floor: Number,
   room_no: String,
   is_admin: { type: Boolean, default: false },
-  mutedCategories: [{ type: String }]
+  mutedCategories: [{ type: String }],
+  pushToken: { type: String }
 });
 export default mongoose.model("User", userSchema);

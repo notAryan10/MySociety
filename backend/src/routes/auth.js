@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/users.js';
 import dotenv from 'dotenv';
+import { auth } from '../middleware/auth.js';
 
 dotenv.config();
 
@@ -24,17 +25,15 @@ router.post('/register', async (req, res) => {
             return res.status(409).json({ message: "User already exists" });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = await User.create({ name, email, password: hashedPassword, block, building, floor: Number(floor), room_no });
+
+        const isAdmin = email.endsWith('@admin.com');
+
+        const newUser = await User.create({ name, email, password: hashedPassword, block, building, floor: Number(floor), room_no, is_admin: isAdmin });
         const token = jwt.sign({ userId: newUser._id, email: newUser.email }, jwtSec, { expiresIn: "1h" });
-        res.status(201).json({
-            message: "User registered successfully", token,
-            user: { id: newUser._id, name: newUser.name, email: newUser.email, block: newUser.block, building: newUser.building, floor: newUser.floor, room_no: newUser.room_no }
-        });
+        res.status(201).json({ message: "User registered successfully", token, user: { id: newUser._id, name: newUser.name, email: newUser.email, block: newUser.block, building: newUser.building, floor: newUser.floor, room_no: newUser.room_no } });
     } catch (error) {
         console.error("Registration Error:", error);
-        res.status(500).json({
-            message: error.message || "Server error during registration"
-        });
+        res.status(500).json({ message: error.message || "Server error during registration" });
     }
 });
 
@@ -65,5 +64,31 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ message: error.message || "Server error during login" });
     }
 });
+
+router.put('/update-push-token', auth, async (req, res) => {
+    try {
+        const { pushToken } = req.body;
+
+        if (!pushToken) {
+            return res.status(400).json({ message: 'Push token is required' });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user.userId,
+            { pushToken },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json({ message: 'Push token updated successfully' });
+    } catch (error) {
+        console.error('Update Push Token Error:', error);
+        res.status(500).json({ message: error.message || 'Failed to update push token' });
+    }
+});
+
 
 export default router;

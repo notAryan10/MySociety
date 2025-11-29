@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.js";
 import postRoutes from "./routes/posts.js";
 import commentRoutes from "./routes/comments.js";
 import uploadRoutes from "./routes/upload.js";
+import userRoutes from "./routes/user.js";
 
 dotenv.config();
 const app = express()
@@ -22,6 +23,7 @@ app.use('/auth', authRoutes);
 app.use('/posts', postRoutes);
 app.use('/comments', commentRoutes);
 app.use('/upload', uploadRoutes);
+app.use('/user', userRoutes);
 
 
 app.listen(process.env.PORT, () =>

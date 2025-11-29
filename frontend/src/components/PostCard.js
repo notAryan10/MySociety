@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import colors from '../styles/colors';
 
 const getCategoryColor = (category) => {
@@ -28,7 +29,7 @@ const formatTimestamp = (dateString) => {
     return date.toLocaleDateString();
 };
 
-export default function PostCard({ post, onPress }) {
+export default function PostCard({ post, onPress, onReport, isAdmin, onDelete, onPin }) {
     const categoryColor = getCategoryColor(post.category);
 
     return (
@@ -47,7 +48,32 @@ export default function PostCard({ post, onPress }) {
                         </Text>
                     </View>
                 </View>
-                <Text style={styles.timestamp}>{formatTimestamp(post.createdAt)}</Text>
+                <View style={styles.headerRight}>
+                    <Text style={styles.timestamp}>{formatTimestamp(post.createdAt)}</Text>
+                    <View style={styles.actionButtons}>
+                        {isAdmin && (
+                            <>
+                                <TouchableOpacity style={styles.actionButton} onPress={(e) => { e.stopPropagation(); onPin(post._id); }} >
+                                    <MaterialCommunityIcons name={post.isPinned ? "pin-off" : "pin"} size={20} color={post.isPinned ? colors.accent : colors.textSecondary} />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.actionButton} onPress={(e) => {
+                                    e.stopPropagation();
+                                    Alert.alert("Delete Post", "Are you sure you want to delete this post?", [
+                                        { text: "Cancel", style: "cancel" },
+                                        { text: "Delete", style: "destructive", onPress: () => onDelete(post._id) }
+                                    ]);
+                                }} >
+                                    <MaterialCommunityIcons name="trash-can-outline" size={20} color={colors.error} />
+                                </TouchableOpacity>
+                            </>
+                        )}
+                        {onReport && (
+                            <TouchableOpacity style={styles.actionButton} onPress={(e) => { e.stopPropagation(); onReport(post._id); }} >
+                                <Feather name="alert-triangle" size={20} color={colors.alert || colors.warning} />
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                </View>
             </View>
 
             <View style={[styles.categoryBadge, { backgroundColor: categoryColor }]}>
@@ -58,10 +84,10 @@ export default function PostCard({ post, onPress }) {
                 {post.text}
             </Text>
 
-            {post.images && post.images.length > 0 && ( <Image source={{ uri: post.images[0] }} style={styles.postImage} resizeMode="cover" /> )}
-            {post.isPinned && (<View style={styles.pinnedBadge}> <Text style={styles.pinnedText}>📌 Pinned</Text> </View> )}
+            {post.images && post.images.length > 0 && (<Image source={{ uri: post.images[0] }} style={styles.postImage} resizeMode="cover" />)}
+            {post.isPinned && (<View style={styles.pinnedBadge}><Text style={styles.pinnedText}>📌 Pinned</Text></View>)}
         </TouchableOpacity>
-    );
+    )
 }
 
 const styles = StyleSheet.create({
@@ -78,6 +104,9 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'flex-start',
         marginBottom: 12,
+    },
+    headerRight: {
+        alignItems: 'flex-end',
     },
     userInfo: {
         flexDirection: 'row',
@@ -111,6 +140,15 @@ const styles = StyleSheet.create({
     timestamp: {
         fontSize: 12,
         color: colors.textMuted,
+        marginBottom: 4,
+    },
+    actionButtons: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    actionButton: {
+        padding: 4,
     },
     categoryBadge: {
         paddingHorizontal: 10,

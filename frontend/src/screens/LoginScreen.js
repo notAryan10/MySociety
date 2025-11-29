@@ -13,7 +13,7 @@ export default function LoginScreen({ navigation }) {
     (async () => {
       try {
         const token = await AsyncStorage.getItem('token');
-        if (token) navigation.replace('Dashboard');
+        if (token) navigation.replace('MainTabs');
       } catch (e) {
         console.log(e)
       }
@@ -30,7 +30,7 @@ export default function LoginScreen({ navigation }) {
       setLoading(true);
       const res = await login(email, password)
       if (res?.token) await AsyncStorage.setItem('token', res.token)
-      navigation.replace('Dashboard')
+      navigation.replace('MainTabs')
     } catch (error) {
       Alert.alert('Login Failed', error.message || 'An error occurred during login');
     } finally {

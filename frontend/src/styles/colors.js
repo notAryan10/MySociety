@@ -5,6 +5,7 @@ export const colors = {
     textPrimary: '#eaeaea',
     secondary: '#333333',
     textSecondary: '#a0a0a0',
+    alert: 'red',
     textMuted: '#666666',
     accent: '#6b46ff',
     accentLight: '#8b6aff',

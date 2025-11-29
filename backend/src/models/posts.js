@@ -8,6 +8,7 @@ const postSchema = new mongoose.Schema({
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   createdAt: { type: Date, default: Date.now },
   block: { type: String, required: true },
+  building: { type: String, required: true },
   category: {
     type: String,
     enum: ["Maintenance", "Buy/Sell", "Lost & Found", "Events", "Other"],

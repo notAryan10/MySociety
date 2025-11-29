@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getPosts } from '../services/api';
+import { getPosts, deletePost, pinPost } from '../services/api';
 import PostCard from '../components/PostCard';
 import CategoryFilter from '../components/CategoryFilter';
 import colors from '../styles/colors';
@@ -12,49 +12,80 @@ export default function Dashboard({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [mutedCategories, setMutedCategories] = useState([]);
 
-  useEffect(() => {
-    loadUser()
-    fetchPosts()
-  }, [])
-
-  useEffect(() => {
-    fetchPosts()
-  }, [selectedCategory])
-
-  const loadUser = async () => {
-    const userData = await AsyncStorage.getItem('user')
-    if (userData) {
-      setUser(JSON.parse(userData))
+  const loadUser = useCallback(async () => {
+    try {
+      const userData = await AsyncStorage.getItem('user')
+      if (userData) {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        setIsAdmin(parsedUser.is_admin || false);
+        setMutedCategories(parsedUser.mutedCategories || []);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      await AsyncStorage.removeItem('user');
+      await AsyncStorage.removeItem('token');
+      setUser(null);
+      setIsAdmin(false);
     }
-  };
+  }, []);
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
       setLoading(true)
       const filters = selectedCategory !== 'All' ? { category: selectedCategory } : {}
       const data = await getPosts(filters)
-      setPosts(data || [])
+      let filteredData = data || [];
+      if (selectedCategory === 'All' && mutedCategories.length > 0) {
+        filteredData = filteredData.filter(post => !mutedCategories.includes(post.category));
+      }
+      setPosts(filteredData)
     } catch (error) {
       console.error('Error fetching posts:', error)
+      if (error.message === 'Invalid token') {
+        await AsyncStorage.removeItem('token')
+        await AsyncStorage.removeItem('user')
+        navigation.replace('Login')
+      }
     } finally {
       setLoading(false)
       setRefreshing(false)
     }
-  };
+  }, [selectedCategory, navigation, mutedCategories]);
 
-  const handleRefresh = () => {
+  useEffect(() => {
+    loadUser();
+    fetchPosts();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadUser();
+      fetchPosts();
+    });
+    return unsubscribe;
+  }, [navigation]);
+
+  // Fetch posts when category changes
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchPosts();
+    }
+  }, [selectedCategory]);
+
+  const handleRefresh = useCallback(() => {
     setRefreshing(true)
     fetchPosts()
-  };
+  }, [fetchPosts])
 
-  const handleLogout = async () => {
-    await AsyncStorage.removeItem('token')
-    await AsyncStorage.removeItem('user')
-    navigation.replace('Login')
-  };
+  const handleNavigateToContacts = useCallback(() => {
+    navigation.navigate('Contacts')
+  }, [navigation])
 
-  const renderHeader = () => (
+  const renderHeader = useMemo(() => (
     <View style={styles.header}>
       <View>
         <Text style={styles.headerTitle}>MySociety</Text>
@@ -65,26 +96,79 @@ export default function Dashboard({ navigation }) {
         )}
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <TouchableOpacity style={[styles.logoutBtn, { marginRight: 10, backgroundColor: colors.secondary }]} onPress={() => navigation.navigate('Contacts')}>
+        <TouchableOpacity style={[styles.logoutBtn, { backgroundColor: colors.secondary }]} onPress={handleNavigateToContacts}>
           <Text style={styles.logoutText}>Contacts</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
     </View>
-  );
+  ), [user, handleNavigateToContacts])
 
-  const renderEmptyState = () => (
+  const renderEmptyState = useMemo(() => (
     <View style={styles.emptyState}>
       <Text style={styles.emptyText}>No posts yet</Text>
       <Text style={styles.emptySubtext}>Be the first to share something!</Text>
     </View>
-  );
+  ), [])
+
+  const handleNavigateToPost = useCallback((postId) => {
+    navigation.navigate('PostDetail', { postId })
+  }, [navigation])
+
+  const handleNavigateToCreatePost = useCallback(() => {
+    navigation.navigate('CreatePost')
+  }, [navigation])
+
+  const handleReport = useCallback((postId) => {
+    navigation.navigate('ReportPost', { postId })
+  }, [navigation])
+
+  const handleDelete = useCallback(async (postId) => {
+    try {
+      await deletePost(postId);
+      setPosts(currentPosts => currentPosts.filter(post => post._id !== postId));
+      Alert.alert('Success', 'Post deleted successfully');
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to delete post');
+    }
+  }, []);
+
+  const handlePin = useCallback(async (postId) => {
+    try {
+      const updatedPost = await pinPost(postId);
+      setPosts(currentPosts => currentPosts.map(post =>
+        post._id === postId ? { ...post, isPinned: updatedPost.isPinned } : post
+      ).sort((a, b) => {
+        if (a.isPinned === b.isPinned) {
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        }
+        return a.isPinned ? -1 : 1;
+      }));
+      Alert.alert('Success', updatedPost.isPinned ? 'Post pinned' : 'Post unpinned');
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to pin post');
+    }
+  }, []);
+
+  const renderItem = useCallback(({ item }) => (
+    <PostCard
+      post={item}
+      onPress={() => handleNavigateToPost(item._id)}
+      onReport={handleReport}
+      isAdmin={isAdmin}
+      onDelete={handleDelete}
+      onPin={handlePin}
+    />
+  ), [handleNavigateToPost, handleReport, isAdmin, handleDelete, handlePin]);
+
+  const keyExtractor = useCallback((item) => item._id, []);
+
+  const refreshControl = useMemo(() => (
+    <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.accent} />
+  ), [refreshing, handleRefresh])
 
   return (
     <View style={styles.container}>
-      {renderHeader()}
+      {renderHeader}
 
       <CategoryFilter selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
 
@@ -93,19 +177,10 @@ export default function Dashboard({ navigation }) {
           <ActivityIndicator size="large" color={colors.accent} />
         </View>
       ) : (
-        <FlatList
-          data={posts}
-          keyExtractor={(item) => item._id}
-          renderItem={({ item }) => (
-            <PostCard post={item} onPress={() => navigation.navigate('PostDetail', { postId: item._id })} />
-          )}
-          contentContainerStyle={styles.listContent}
-          refreshControl={ <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.accent} /> }
-          ListEmptyComponent={renderEmptyState}
-        />
+        <FlatList data={posts} keyExtractor={keyExtractor} renderItem={renderItem} contentContainerStyle={styles.listContent} refreshControl={refreshControl} ListEmptyComponent={renderEmptyState} />
       )}
 
-      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('CreatePost')} activeOpacity={0.8} >
+      <TouchableOpacity style={styles.fab} onPress={handleNavigateToCreatePost} activeOpacity={0.8} >
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
     </View>

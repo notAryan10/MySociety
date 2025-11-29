@@ -2,14 +2,16 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 
+const port = process.env.PORT || 3000;
+
 const getApiUrl = () => {
   const debuggerHost = Constants.expoConfig?.hostUri;
   if (debuggerHost) {
     const host = debuggerHost.split(':')[0]
-    return `http://${host}:6000`;
+    return `http://${host}:${port}`;
   }
 
-  return 'http://localhost:6000'
+  return `http://localhost:${port}`;
 };
 
 const API_URL = getApiUrl();
@@ -59,7 +61,6 @@ export const logout = async () => {
   await AsyncStorage.removeItem('user')
 }
 
-// Post APIs
 export const createPost = async (postData) => {
   try {
     const response = await api.post('/posts/create', postData)
@@ -96,7 +97,6 @@ export const getPostById = async (postId) => {
   }
 }
 
-// Comment APIs
 export const createComment = async (commentData) => {
   try {
     const response = await api.post('/comments/create', commentData)
@@ -115,12 +115,10 @@ export const getComments = async (postId) => {
   }
 }
 
-// Upload image
 export const uploadImage = async (imageUri) => {
   try {
     const formData = new FormData();
 
-    // Extract filename from URI
     const filename = imageUri.split('/').pop();
     const match = /\.(\w+)$/.exec(filename);
     const type = match ? `image/${match[1]}` : 'image/jpeg';
@@ -142,5 +140,69 @@ export const uploadImage = async (imageUri) => {
     throw error.response?.data || { message: 'Failed to upload image' };
   }
 };
+
+export const reportPost = async (postId, reason) => {
+  try {
+    const response = await api.post(`/posts/${postId}/report`, { reason });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to report post' };
+  }
+};
+
+export const deletePost = async (postId) => {
+  try {
+    const response = await api.delete(`/posts/${postId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to delete post' };
+  }
+};
+
+export const pinPost = async (postId) => {
+  try {
+    const response = await api.put(`/posts/pin/${postId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to pin post' };
+  }
+};
+
+export const getUserProfile = async () => {
+  try {
+    const response = await api.get('/user/profile');
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to fetch profile' };
+  }
+};
+
+export const updateProfile = async (name) => {
+  try {
+    const response = await api.put('/user/profile', { name });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to update profile' };
+  }
+};
+
+export const updateSettings = async (mutedCategories) => {
+  try {
+    const response = await api.put('/user/settings', { mutedCategories });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to update settings' };
+  }
+};
+
+export const updatePushToken = async (pushToken) => {
+  try {
+    const response = await api.put('/auth/update-push-token', { pushToken });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to update push token' };
+  }
+};
+
 
 export default api;

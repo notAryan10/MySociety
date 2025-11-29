@@ -32,7 +32,7 @@ export default function SignUpScreen({ navigation }) {
       await login(email, password);
 
       Alert.alert('Success', 'Account created successfully!');
-      navigation.replace('Dashboard');
+      navigation.replace('MainTabs');
     } catch (error) {
       Alert.alert('Sign Up Failed', error.message || 'An error occurred during sign up');
     } finally {
