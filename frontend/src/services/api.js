@@ -29,7 +29,7 @@ api.interceptors.request.use(async (config) => {
 
 export const login = async (email, password) => {
   try {
-    const response = await api.post('/login', { email, password })
+    const response = await api.post('/auth/login', { email, password })
     if (response.data.token) {
       await AsyncStorage.setItem('token', response.data.token)
       await AsyncStorage.setItem('user', JSON.stringify(response.data.user))
@@ -42,7 +42,7 @@ export const login = async (email, password) => {
 
 export const register = async (userData) => {
   try {
-    const response = await api.post('/register', userData)
+    const response = await api.post('/auth/register', userData)
     return response.data
   } catch (error) {
     throw error.response?.data || { message: 'Registration failed. Please try again.' }
