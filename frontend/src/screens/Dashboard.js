@@ -64,9 +64,14 @@ export default function Dashboard({ navigation }) {
           </Text>
         )}
       </View>
-      <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <TouchableOpacity style={[styles.logoutBtn, { marginRight: 10, backgroundColor: colors.secondary }]} onPress={() => navigation.navigate('Contacts')}>
+          <Text style={styles.logoutText}>Contacts</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
