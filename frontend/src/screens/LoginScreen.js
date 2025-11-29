@@ -17,7 +17,7 @@ export default function LoginScreen({ navigation }) {
       } catch (e) {
         console.log(e)
       }
-    })
+    })()
   }, [])
 
   const handleLogin = async () => {

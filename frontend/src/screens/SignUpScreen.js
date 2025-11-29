@@ -46,9 +46,9 @@ export default function SignUpScreen({ navigation }) {
         <Text style={styles.title}>Create Account</Text>
 
         <TextInput style={styles.input} placeholder="Full Name" placeholderTextColor={colors.textMuted} value={formData.name} onChangeText={(text) => handleChange('name', text)} autoCapitalize="words" />
-        <TextInput style={styles.input} placeholder="Email" placeholderTextColor={colors.textMuted} value={formData.email} onChangeText={(text) => handleChange('email', text.toLowerCase())} keyboardType="email-address" autoCapitalize="none" />
-        <TextInput style={styles.input} placeholder="Password" placeholderTextColor={colors.textMuted} value={formData.password} onChangeText={(text) => handleChange('password', text)} secureTextEntry />
-        <TextInput style={styles.input} placeholder="Confirm Password" placeholderTextColor={colors.textMuted} value={formData.confirmPassword} onChangeText={(text) => handleChange('confirmPassword', text)} secureTextEntry />
+        <TextInput style={styles.input} placeholder="Email" placeholderTextColor={colors.textMuted} value={formData.email} onChangeText={(text) => handleChange('email', text.toLowerCase())} keyboardType="email-address" autoCapitalize="none" textContentType="emailAddress" />
+        <TextInput style={styles.input} placeholder="Password" placeholderTextColor={colors.textMuted} value={formData.password} onChangeText={(text) => handleChange('password', text)} secureTextEntry textContentType="newPassword" autoComplete="off" />
+        <TextInput style={styles.input} placeholder="Confirm Password" placeholderTextColor={colors.textMuted} value={formData.confirmPassword} onChangeText={(text) => handleChange('confirmPassword', text)} secureTextEntry textContentType="newPassword" autoComplete="off" />
         <TextInput style={styles.input} placeholder="Block (e.g., A, B, C)" placeholderTextColor={colors.textMuted} value={formData.block} onChangeText={(text) => handleChange('block', text)} />
         <TextInput style={styles.input} placeholder="Building Name/Number" placeholderTextColor={colors.textMuted} value={formData.building} onChangeText={(text) => handleChange('building', text)} />
         <TextInput style={styles.input} placeholder="Floor Number" placeholderTextColor={colors.textMuted} value={formData.floor} onChangeText={(text) => handleChange('floor', text.replace(/[^0-9]/g, ''))} keyboardType="number-pad" />
