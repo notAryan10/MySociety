@@ -204,5 +204,52 @@ export const updatePushToken = async (pushToken) => {
   }
 };
 
+export const createPoll = async (pollData) => {
+  try {
+    const response = await api.post('/polls/create', pollData);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to create poll' };
+  }
+};
+
+export const getPolls = async (filters = {}) => {
+  try {
+    const params = new URLSearchParams(filters).toString();
+    const response = await api.get(`/polls${params ? `?${params}` : ''}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to fetch polls' };
+  }
+};
+
+export const voteOnPoll = async (pollId, optionIndex) => {
+  try {
+    const response = await api.post(`/polls/${pollId}/vote`, { optionIndex });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to vote on poll' };
+  }
+};
+
+export const deletePoll = async (pollId) => {
+  try {
+    const response = await api.delete(`/polls/${pollId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to delete poll' };
+  }
+};
+
+export const pinPoll = async (pollId) => {
+  try {
+    const response = await api.put(`/polls/pin/${pollId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to pin poll' };
+  }
+};
+
 
 export default api;
+

@@ -1,19 +1,23 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, Alert, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getPosts, deletePost, pinPost } from '../services/api';
+import { getPosts, deletePost, pinPost, getPolls, voteOnPoll, deletePoll, pinPoll } from '../services/api';
 import PostCard from '../components/PostCard';
+import PollCard from '../components/PollCard';
 import CategoryFilter from '../components/CategoryFilter';
 import colors from '../styles/colors';
+import { Feather } from '@expo/vector-icons';
 
 export default function Dashboard({ navigation }) {
   const [posts, setPosts] = useState([]);
+  const [polls, setPolls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [mutedCategories, setMutedCategories] = useState([]);
+  const [showActionModal, setShowActionModal] = useState(false);
 
   const loadUser = useCallback(async () => {
     try {
@@ -37,12 +41,22 @@ export default function Dashboard({ navigation }) {
     try {
       setLoading(true)
       const filters = selectedCategory !== 'All' ? { category: selectedCategory } : {}
-      const data = await getPosts(filters)
-      let filteredData = data || [];
+
+      const [postsData, pollsData] = await Promise.all([
+        getPosts(filters),
+        getPolls(filters)
+      ]);
+
+      let filteredPosts = postsData || [];
+      let filteredPolls = pollsData || [];
+
       if (selectedCategory === 'All' && mutedCategories.length > 0) {
-        filteredData = filteredData.filter(post => !mutedCategories.includes(post.category));
+        filteredPosts = filteredPosts.filter(post => !mutedCategories.includes(post.category));
+        filteredPolls = filteredPolls.filter(poll => !mutedCategories.includes(poll.category));
       }
-      setPosts(filteredData)
+
+      setPosts(filteredPosts)
+      setPolls(filteredPolls)
     } catch (error) {
       console.error('Error fetching posts:', error)
       if (error.message === 'Invalid token') {
@@ -69,7 +83,6 @@ export default function Dashboard({ navigation }) {
     return unsubscribe;
   }, [navigation]);
 
-  // Fetch posts when category changes
   useEffect(() => {
     if (selectedCategory) {
       fetchPosts();
@@ -149,16 +162,68 @@ export default function Dashboard({ navigation }) {
     }
   }, []);
 
-  const renderItem = useCallback(({ item }) => (
-    <PostCard
-      post={item}
-      onPress={() => handleNavigateToPost(item._id)}
-      onReport={handleReport}
-      isAdmin={isAdmin}
-      onDelete={handleDelete}
-      onPin={handlePin}
-    />
-  ), [handleNavigateToPost, handleReport, isAdmin, handleDelete, handlePin]);
+  const handleVote = useCallback(async (pollId, optionIndex) => {
+    try {
+      const updatedPoll = await voteOnPoll(pollId, optionIndex);
+      setPolls(currentPolls => currentPolls.map(poll => poll._id === pollId ? updatedPoll : poll));
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to vote on poll');
+    }
+  }, []);
+
+  const handleDeletePoll = useCallback(async (pollId) => {
+    try {
+      await deletePoll(pollId);
+      setPolls(currentPolls => currentPolls.filter(poll => poll._id !== pollId));
+      Alert.alert('Success', 'Poll deleted successfully');
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to delete poll');
+    }
+  }, []);
+
+  const handlePinPoll = useCallback(async (pollId) => {
+    try {
+      const updatedPoll = await pinPoll(pollId);
+      setPolls(currentPolls => currentPolls.map(poll => poll._id === pollId ? updatedPoll : poll));
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to pin poll');
+    }
+  }, []);
+
+  const combinedFeed = useMemo(() => {
+    const postsWithType = posts.map(post => ({ ...post, type: 'post' }));
+    const pollsWithType = polls.map(poll => ({ ...poll, type: 'poll' }));
+    const combined = [...postsWithType, ...pollsWithType];
+    return combined.sort((a, b) => {
+      if (a.isPinned !== b.isPinned) return b.isPinned ? 1 : -1;
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+  }, [posts, polls]);
+
+  const renderItem = useCallback(({ item }) => {
+    if (item.type === 'poll') {
+      return (
+        <PollCard
+          poll={item}
+          onVote={handleVote}
+          onDelete={handleDeletePoll}
+          onPin={handlePinPoll}
+          isAdmin={isAdmin}
+          currentUserId={user?._id}
+        />
+      );
+    }
+    return (
+      <PostCard
+        post={item}
+        onPress={() => handleNavigateToPost(item._id)}
+        onReport={handleReport}
+        isAdmin={isAdmin}
+        onDelete={handleDelete}
+        onPin={handlePin}
+      />
+    );
+  }, [handleNavigateToPost, handleReport, isAdmin, handleDelete, handlePin, handleVote, handleDeletePoll, handlePinPoll, user]);
 
   const keyExtractor = useCallback((item) => item._id, []);
 
@@ -177,12 +242,30 @@ export default function Dashboard({ navigation }) {
           <ActivityIndicator size="large" color={colors.accent} />
         </View>
       ) : (
-        <FlatList data={posts} keyExtractor={keyExtractor} renderItem={renderItem} contentContainerStyle={styles.listContent} refreshControl={refreshControl} ListEmptyComponent={renderEmptyState} />
+        <FlatList data={combinedFeed} keyExtractor={keyExtractor} renderItem={renderItem} contentContainerStyle={styles.listContent} refreshControl={refreshControl} ListEmptyComponent={renderEmptyState} />
       )}
 
-      <TouchableOpacity style={styles.fab} onPress={handleNavigateToCreatePost} activeOpacity={0.8} >
+      <TouchableOpacity style={styles.fab} onPress={() => setShowActionModal(true)} activeOpacity={0.8} >
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
+
+      <Modal visible={showActionModal} transparent animationType="fade" onRequestClose={() => setShowActionModal(false)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowActionModal(false)}>
+          <View style={styles.actionSheet}>
+            <TouchableOpacity style={styles.actionButton} onPress={() => { setShowActionModal(false); navigation.navigate('CreatePost'); }}>
+              <Feather name="edit" size={24} color={colors.accent} />
+              <Text style={styles.actionButtonText}>Create Post</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={() => { setShowActionModal(false); navigation.navigate('CreatePoll'); }}>
+              <Feather name="bar-chart-2" size={24} color={colors.accent} />
+              <Text style={styles.actionButtonText}>Create Poll</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.actionButton, styles.cancelButton]} onPress={() => setShowActionModal(false)}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -268,5 +351,41 @@ const styles = StyleSheet.create({
     fontSize: 32,
     color: '#ffffff',
     fontWeight: '300',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  actionSheet: {
+    backgroundColor: colors.cardBackground,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 40,
+    paddingTop: 20,
+    paddingHorizontal: 20,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: colors.inputBackground,
+    marginBottom: 12,
+  },
+  actionButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginLeft: 16,
+  },
+  cancelButton: {
+    backgroundColor: colors.error + '20',
+  },
+  cancelButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.error,
+    textAlign: 'center',
   },
 });

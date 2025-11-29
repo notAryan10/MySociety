@@ -19,17 +19,15 @@ router.post('/create', auth, async (req, res) => {
 
         const populatedPost = await Post.findById(newPost._id).populate('user_id', 'name email block building')
 
-        // Send push notifications to users in the same building
         try {
             const usersInBuilding = await User.find({
                 building: building,
-                _id: { $ne: req.user.userId }, // Exclude the post creator
+                _id: { $ne: req.user.userId }, 
                 pushToken: { $exists: true, $ne: null }
             });
 
             const messages = [];
             for (const user of usersInBuilding) {
-                // Check if the push token is valid
                 if (!Expo.isExpoPushToken(user.pushToken)) {
                     console.error(`Push token ${user.pushToken} is not a valid Expo push token`);
                     continue;
@@ -44,7 +42,6 @@ router.post('/create', auth, async (req, res) => {
                 });
             }
 
-            // Send notifications in chunks
             const chunks = expo.chunkPushNotifications(messages);
             for (const chunk of chunks) {
                 try {
@@ -56,7 +53,6 @@ router.post('/create', auth, async (req, res) => {
             }
         } catch (notificationError) {
             console.error('Error sending push notifications:', notificationError);
-            // Don't fail the post creation if notifications fail
         }
 
         res.status(201).json(populatedPost)

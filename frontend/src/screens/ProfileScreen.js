@@ -25,7 +25,6 @@ export default function ProfileScreen({ navigation }) {
             setUser(userData);
             setNewName(userData.name);
             setMutedCategories(userData.mutedCategories || []);
-            // Update local storage
             await AsyncStorage.setItem('user', JSON.stringify(userData));
         } catch (error) {
             console.error('Error loading profile:', error);
@@ -61,12 +60,12 @@ export default function ProfileScreen({ navigation }) {
                 newMuted.push(category);
             }
 
-            setMutedCategories(newMuted); // Optimistic update
+            setMutedCategories(newMuted);
             const updatedUser = await updateSettings(newMuted);
             setUser(updatedUser);
             await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
         } catch (error) {
-            setMutedCategories(mutedCategories); // Revert on error
+            setMutedCategories(mutedCategories);
             Alert.alert('Error', 'Failed to update settings');
         }
     };

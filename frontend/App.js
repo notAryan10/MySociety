@@ -7,6 +7,7 @@ import Login from './src/screens/LoginScreen';
 import Dashboard from './src/screens/Dashboard';
 import SignUpScreen from './src/screens/SignUpScreen';
 import CreatePostScreen from './src/screens/CreatePostScreen';
+import CreatePollScreen from './src/screens/CreatePollScreen';
 import PostDetailScreen from './src/screens/PostDetailScreen';
 import ContactsScreen from './src/screens/ContactsScreen';
 import ReportPostScreen from './src/screens/ReportPostScreen';
@@ -104,6 +105,7 @@ export default function App() {
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="MainTabs" component={TabNavigator} />
         <Stack.Screen name="CreatePost" component={CreatePostScreen} />
+        <Stack.Screen name="CreatePoll" component={CreatePollScreen} />
         <Stack.Screen name="PostDetail" component={PostDetailScreen} />
         <Stack.Screen name="Contacts" component={ContactsScreen} />
         <Stack.Screen name="ReportPost" component={ReportPostScreen} />

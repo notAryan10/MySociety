@@ -7,6 +7,7 @@ import postRoutes from "./routes/posts.js";
 import commentRoutes from "./routes/comments.js";
 import uploadRoutes from "./routes/upload.js";
 import userRoutes from "./routes/user.js";
+import pollRoutes from "./routes/polls.js";
 
 dotenv.config();
 const app = express()
@@ -24,6 +25,7 @@ app.use('/posts', postRoutes);
 app.use('/comments', commentRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/user', userRoutes);
+app.use('/polls', pollRoutes);
 
 
 app.listen(process.env.PORT, () =>
