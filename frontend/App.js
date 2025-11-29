@@ -8,6 +8,7 @@ import Dashboard from './src/screens/Dashboard';
 import SignUpScreen from './src/screens/SignUpScreen';
 import CreatePostScreen from './src/screens/CreatePostScreen';
 import PostDetailScreen from './src/screens/PostDetailScreen';
+import ContactsScreen from './src/screens/ContactsScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -39,6 +40,7 @@ export default function App() {
         <Stack.Screen name="Dashboard" component={Dashboard} />
         <Stack.Screen name="CreatePost" component={CreatePostScreen} />
         <Stack.Screen name="PostDetail" component={PostDetailScreen} />
+        <Stack.Screen name="Contacts" component={ContactsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
