@@ -16,7 +16,6 @@ export default function Dashboard({ navigation }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [mutedCategories, setMutedCategories] = useState([]);
   const [showActionModal, setShowActionModal] = useState(false);
 
   const loadUser = useCallback(async () => {
@@ -26,7 +25,6 @@ export default function Dashboard({ navigation }) {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
         setIsAdmin(parsedUser.is_admin || false);
-        setMutedCategories(parsedUser.mutedCategories || []);
       }
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -50,11 +48,6 @@ export default function Dashboard({ navigation }) {
       let filteredPosts = postsData || [];
       let filteredPolls = pollsData || [];
 
-      if (selectedCategory === 'All' && mutedCategories.length > 0) {
-        filteredPosts = filteredPosts.filter(post => !mutedCategories.includes(post.category));
-        filteredPolls = filteredPolls.filter(poll => !mutedCategories.includes(poll.category));
-      }
-
       setPosts(filteredPosts)
       setPolls(filteredPolls)
     } catch (error) {
@@ -68,7 +61,7 @@ export default function Dashboard({ navigation }) {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [selectedCategory, navigation, mutedCategories]);
+  }, [selectedCategory, navigation]);
 
   useEffect(() => {
     loadUser();

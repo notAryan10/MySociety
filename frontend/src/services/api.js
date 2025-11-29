@@ -186,23 +186,6 @@ export const updateProfile = async (name) => {
   }
 };
 
-export const updateSettings = async (mutedCategories) => {
-  try {
-    const response = await api.put('/user/settings', { mutedCategories });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { message: 'Failed to update settings' };
-  }
-};
-
-export const updatePushToken = async (pushToken) => {
-  try {
-    const response = await api.put('/auth/update-push-token', { pushToken });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { message: 'Failed to update push token' };
-  }
-};
 
 export const createPoll = async (pollData) => {
   try {

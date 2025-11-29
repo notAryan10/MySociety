@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Switch, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getUserProfile, updateProfile, updateSettings } from '../services/api';
+import { getUserProfile, updateProfile } from '../services/api';
 import colors from '../styles/colors';
 import { Feather } from '@expo/vector-icons';
-
-const CATEGORIES = ["Maintenance", "Buy/Sell", "Lost & Found", "Events", "Other"];
 
 export default function ProfileScreen({ navigation }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [editingName, setEditingName] = useState(false);
     const [newName, setNewName] = useState('');
-    const [mutedCategories, setMutedCategories] = useState([]);
 
     useEffect(() => {
         loadProfile();
@@ -24,7 +21,6 @@ export default function ProfileScreen({ navigation }) {
             const userData = await getUserProfile();
             setUser(userData);
             setNewName(userData.name);
-            setMutedCategories(userData.mutedCategories || []);
             await AsyncStorage.setItem('user', JSON.stringify(userData));
         } catch (error) {
             console.error('Error loading profile:', error);
@@ -48,25 +44,6 @@ export default function ProfileScreen({ navigation }) {
             Alert.alert('Success', 'Name updated successfully');
         } catch (error) {
             Alert.alert('Error', error.message || 'Failed to update name');
-        }
-    };
-
-    const toggleCategoryMute = async (category) => {
-        try {
-            let newMuted = [...mutedCategories];
-            if (newMuted.includes(category)) {
-                newMuted = newMuted.filter(c => c !== category);
-            } else {
-                newMuted.push(category);
-            }
-
-            setMutedCategories(newMuted);
-            const updatedUser = await updateSettings(newMuted);
-            setUser(updatedUser);
-            await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-        } catch (error) {
-            setMutedCategories(mutedCategories);
-            Alert.alert('Error', 'Failed to update settings');
         }
     };
 
@@ -140,24 +117,6 @@ export default function ProfileScreen({ navigation }) {
                             </View>
                         )}
                     </View>
-                </View>
-            </View>
-
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Notification Settings</Text>
-                <Text style={styles.sectionSubtitle}>Mute categories you don't want to see</Text>
-                <View style={styles.card}>
-                    {CATEGORIES.map(category => (
-                        <View key={category} style={styles.settingRow}>
-                            <Text style={styles.settingLabel}>{category}</Text>
-                            <Switch
-                                value={!mutedCategories.includes(category)}
-                                onValueChange={() => toggleCategoryMute(category)}
-                                trackColor={{ false: colors.border, true: colors.accent }}
-                                thumbColor={'#fff'}
-                            />
-                        </View>
-                    ))}
                 </View>
             </View>
 

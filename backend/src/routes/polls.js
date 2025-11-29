@@ -2,10 +2,8 @@ import express from 'express';
 import Poll from '../models/polls.js';
 import { auth } from '../middleware/auth.js';
 import User from '../models/users.js';
-import { Expo } from 'expo-server-sdk';
 
 const router = express.Router();
-const expo = new Expo();
 
 router.post('/create', auth, async (req, res) => {
     try {
@@ -34,42 +32,6 @@ router.post('/create', auth, async (req, res) => {
         });
 
         const populatedPoll = await Poll.findById(newPoll._id).populate('user_id', 'name email block building');
-
-        try {
-            const usersInBuilding = await User.find({
-                building: building,
-                _id: { $ne: req.user.userId },
-                pushToken: { $exists: true, $ne: null }
-            });
-
-            const messages = [];
-            for (const user of usersInBuilding) {
-                if (!Expo.isExpoPushToken(user.pushToken)) {
-                    console.error(`Push token ${user.pushToken} is not a valid Expo push token`);
-                    continue;
-                }
-
-                messages.push({
-                    to: user.pushToken,
-                    sound: 'default',
-                    title: `New poll in ${building}`,
-                    body: `${populatedPoll.user_id.name}: ${question}`,
-                    data: { pollId: newPoll._id.toString(), category, type: 'poll' }
-                });
-            }
-
-            const chunks = expo.chunkPushNotifications(messages);
-            for (const chunk of chunks) {
-                try {
-                    const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
-                    console.log('Notification tickets:', ticketChunk);
-                } catch (error) {
-                    console.error('Error sending notification chunk:', error);
-                }
-            }
-        } catch (notificationError) {
-            console.error('Error sending push notifications:', notificationError);
-        }
 
         res.status(201).json(populatedPoll);
     } catch (error) {

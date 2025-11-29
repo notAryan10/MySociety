@@ -2,10 +2,8 @@ import express from 'express';
 import Post from '../models/posts.js';
 import { auth } from '../middleware/auth.js';
 import User from '../models/users.js';
-import { Expo } from 'expo-server-sdk';
 
 const router = express.Router();
-const expo = new Expo();
 
 router.post('/create', auth, async (req, res) => {
     try {
@@ -18,42 +16,6 @@ router.post('/create', auth, async (req, res) => {
         const newPost = await Post.create({ user_id: req.user.userId, text, category, block, building, images: images || [], })
 
         const populatedPost = await Post.findById(newPost._id).populate('user_id', 'name email block building')
-
-        try {
-            const usersInBuilding = await User.find({
-                building: building,
-                _id: { $ne: req.user.userId }, 
-                pushToken: { $exists: true, $ne: null }
-            });
-
-            const messages = [];
-            for (const user of usersInBuilding) {
-                if (!Expo.isExpoPushToken(user.pushToken)) {
-                    console.error(`Push token ${user.pushToken} is not a valid Expo push token`);
-                    continue;
-                }
-
-                messages.push({
-                    to: user.pushToken,
-                    sound: 'default',
-                    title: `New post in ${building}`,
-                    body: `${populatedPost.user_id.name}: ${text.substring(0, 100)}${text.length > 100 ? '...' : ''}`,
-                    data: { postId: newPost._id.toString(), category }
-                });
-            }
-
-            const chunks = expo.chunkPushNotifications(messages);
-            for (const chunk of chunks) {
-                try {
-                    const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
-                    console.log('Notification tickets:', ticketChunk);
-                } catch (error) {
-                    console.error('Error sending notification chunk:', error);
-                }
-            }
-        } catch (notificationError) {
-            console.error('Error sending push notifications:', notificationError);
-        }
 
         res.status(201).json(populatedPost)
     } catch (error) {

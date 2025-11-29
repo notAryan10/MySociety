@@ -65,30 +65,5 @@ router.post('/login', async (req, res) => {
     }
 });
 
-router.put('/update-push-token', auth, async (req, res) => {
-    try {
-        const { pushToken } = req.body;
-
-        if (!pushToken) {
-            return res.status(400).json({ message: 'Push token is required' });
-        }
-
-        const user = await User.findByIdAndUpdate(
-            req.user.userId,
-            { pushToken },
-            { new: true }
-        );
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        res.json({ message: 'Push token updated successfully' });
-    } catch (error) {
-        console.error('Update Push Token Error:', error);
-        res.status(500).json({ message: error.message || 'Failed to update push token' });
-    }
-});
-
 
 export default router;

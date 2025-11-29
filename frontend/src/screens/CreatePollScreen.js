@@ -49,13 +49,7 @@ export default function CreatePollScreen({ navigation }) {
             const userData = await AsyncStorage.getItem('user');
             const user = JSON.parse(userData);
 
-            const pollData = {
-                question: question.trim(),
-                options: filledOptions,
-                category,
-                block: user.block,
-                building: user.building
-            };
+            const pollData = { question: question.trim(), options: filledOptions, category, block: user.block, building: user.building };
 
             await createPoll(pollData);
             Alert.alert('Success', 'Poll created successfully!');

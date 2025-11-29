@@ -11,8 +11,6 @@ import CreatePollScreen from './src/screens/CreatePollScreen';
 import PostDetailScreen from './src/screens/PostDetailScreen';
 import ContactsScreen from './src/screens/ContactsScreen';
 import ReportPostScreen from './src/screens/ReportPostScreen';
-import { registerForPushNotificationsAsync, setupNotificationListeners } from './src/services/notificationService';
-import { updatePushToken } from './src/services/api';
 
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -47,47 +45,13 @@ function TabNavigator() {
 
 export default function App() {
   const [initialRoute, setInitialRoute] = useState(null);
-  const notificationListener = useRef();
 
   useEffect(() => {
     async function checkAuth() {
       const token = await AsyncStorage.getItem('token')
       setInitialRoute(token ? 'MainTabs' : 'Login')
-
-      if (token) {
-        try {
-          const pushToken = await registerForPushNotificationsAsync();
-          if (pushToken) {
-            await updatePushToken(pushToken);
-          }
-        } catch (error) {
-          console.log('Push notifications not available:', error.message);
-        }
-      }
     }
     checkAuth()
-
-    try {
-      notificationListener.current = setupNotificationListeners(
-        (notification) => {
-          console.log('Notification received:', notification);
-        },
-        (response) => {
-          console.log('Notification tapped:', response);
-        }
-      );
-    } catch (error) {
-      console.log('Notification listeners not available');
-    }
-
-    return () => {
-      if (notificationListener.current) {
-        try {
-          notificationListener.current();
-        } catch (error) {
-        }
-      }
-    };
   }, [])
 
   if (!initialRoute) {
