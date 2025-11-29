@@ -5,9 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 
 const contacts = [
   { id: '1', name: 'Security Guard', role: 'Main Gate', phone: '9876543210' },
-  { id: '2', name: 'Society Office', role: 'Administration', phone: '011-23456789' },
-  { id: '3', name: 'Plumber (Ramesh)', role: 'Maintenance', phone: '9876543211' },
-  { id: '4', name: 'Electrician (Suresh)', role: 'Maintenance', phone: '9876543212' },
+  { id: '2', name: 'Society Office', role: 'Administration', phone: '213456789' },
+  { id: '3', name: 'Plumber', role: 'Maintenance', phone: '9876543211' },
+  { id: '4', name: 'Electrician', role: 'Maintenance', phone: '9876543212' },
   { id: '5', name: 'Lift Technician', role: 'Emergency', phone: '9876543213' },
   { id: '6', name: 'Ambulance', role: 'Emergency', phone: '102' },
   { id: '7', name: 'Police', role: 'Emergency', phone: '100' },
