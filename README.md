@@ -1,4 +1,4 @@
-# 🏙️ MySociety – Residential Community App
+# MySociety – Residential Community App
 
 A private community application for housing societies where residents can post updates, raise complaints, view announcements, and access important contacts.  
 Built for the MAD Hackathon using **React Native**, **Node.js**, and **MongoDB**.
